@@ -1,5 +1,7 @@
+from os import system
 import sys
 import pygame
+from sqlalchemy import true
 from bullet import Bullet
 from alien import Alien
 
@@ -10,6 +12,8 @@ def check_keydown_events(event, ai_settings, screen, ship, bullets):
         ship.moving_left = True
     elif event.key == pygame.K_SPACE:
         fire_bullet(ai_settings, screen, ship, bullets)
+    elif event.key == pygame.K_q:
+        sys.exit()
 def check_keyup_events(event, ship):
     if event.key == pygame.K_RIGHT:
         ship.moving_right = False
@@ -32,12 +36,18 @@ def update_screen(ai_settings, screen, ship, aliens, bullets):
     aliens.draw(screen)
     pygame.display.flip()
 
-def update_bullets(bullets):
+def update_bullets(ai_settings, screen, ship, aliens, bullets):
     bullets.update()
     for bullet in bullets.copy():
         if bullet.rect.bottom <= 0:
             bullets.remove(bullet)
-    # print(len(bullets))
+    check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets)
+
+def check_bullet_alien_collisions(ai_settings, screen, ship, aliens, bullets):
+    collisions = pygame.sprite.groupcollide(bullets, aliens, true, true)
+    if len(aliens) == 0:
+        bullets.empty()
+        create_fleet(ai_settings, screen, ship, aliens)
 
 def fire_bullet(ai_settings, screen, ship, bullets):
     if len(bullets) < ai_settings.bullets_allowed:
@@ -82,4 +92,5 @@ def check_fleet_edges(ai_settings, aliens):
             
 def change_fleet_direction(ai_settings, aliens):
     for alien in aliens.sprites():
-        ai_settings.fleet_direction *= -1
+        alien.rect.y += ai_settings.fleet_drop_speed
+    ai_settings.fleet_direction *= -1
