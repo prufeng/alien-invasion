@@ -1,4 +1,4 @@
-from os import system
+from os import stat, system
 import sys
 import pygame
 from time import sleep
@@ -67,10 +67,16 @@ def check_bullet_alien_collisions(ai_settings, screen, stats, sb, ship, aliens, 
         for alien in collisions.values():
             stats.score += ai_settings.alien_points
             sb.prep_score()
+        check_high_score(stats, sb)
     if len(aliens) == 0:
         bullets.empty()
         ai_settings.increase_speed()
         create_fleet(ai_settings, screen, ship, aliens)
+
+def check_high_score(stats, sb):
+    if stats.score > stats.high_score:
+        stats.high_score = stats.score
+        sb.prep_high_score()
 
 def fire_bullet(ai_settings, screen, ship, bullets):
     if len(bullets) < ai_settings.bullets_allowed:
